@@ -1,6 +1,33 @@
+import { useGSAP } from "@gsap/react"
+import gsap, { SplitText } from "gsap/all"
+
 
 
 const Hero = () => {
+
+  useGSAP(() => {
+    const heroSplit = new SplitText('.title', { type: 'chars, words' })     // Descompone el texto en caracteres y palabras
+    const paragraphSplit = new SplitText('.subtitle', { type: 'lines' })    // Descompone el texto en líneas
+
+    heroSplit.chars.forEach((char) => char.classList.add('text-gradient'))  // Agrega la clase gradient a los caracteres
+
+    gsap.from(heroSplit.chars, { // Anima los caracteres
+      yPercent: 100,             // Cada letra comienza debajo de su posición final ( fuera de la vista )
+      duration: 1.8,
+      ease: 'expo.out',
+      stagger: 0.06
+    });
+
+    gsap.from(paragraphSplit.lines, { // Anima las líneas
+      opacity: 0,
+      yPercent: 100,
+      duration: 1.8,
+      ease: 'expo.out',
+      stagger: 0.06,
+      delay: 1,
+    });
+  },[])
+
   return (
     <>
       <section id="hero" className="noisy">
