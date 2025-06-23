@@ -1,14 +1,13 @@
 
-
-
-import { scrollTrigger, SplitText } from 'gsap/all'
+import gsap from 'gsap'
+import { ScrollTrigger, SplitText } from 'gsap/all'
 
 gsap.registerPlugin(ScrollTrigger, SplitText)
 
 const App = () => {
   return (
-    <div>
-      <h1 className='text-xl'>App</h1>
+    <div className='flex-center'>
+      <h1 className='text-xl text-white'>App</h1>
     </div>
   )
 }
