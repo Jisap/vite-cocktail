@@ -48,19 +48,19 @@ const Hero = () => {
     const endValue = isMobile ? '120% top': 'bottom top';
 
     const tl = gsap.timeline({
-      scrollTrigger: {
-        trigger: 'video',
-        start: startValue,
-        end: endValue,
-        scrub: true,
-        pin: true,
+      scrollTrigger: {                  // ScrollTrigger esta escuchando el evento scroll de la ventana
+        trigger: 'video',               // La animación se "activa" cuando el elemento <video> (o su contenedor) entra en la pantalla.
+        start: startValue,              // start y end: Definen la "zona de acción" del scroll. La animación se desarrollará mientras el usuario 
+        end: endValue,                  // se desplaza entre el punto de start y el punto de end.
+        scrub: true,                    // scrub vincula el progreso de la animación directamente a la posición de la barra de desplazamiento. 
+        pin: true,                      // pin: true hace que la animación se "despliegue" al momento de que el usuario desplaza la barra de desplazamiento.
       }
     })
   
-    if (videoRef.current) {
-      videoRef.current.onloadedmetadata = () => {
-        tl.to(videoRef.current, {
-          currentTime: videoRef.current.duration 
+    if (videoRef.current) {                         // Si el video esta cargado
+      videoRef.current.onloadedmetadata = () => {   
+        tl.to(videoRef.current, {                   // le decimos a gsap que queremos animar el video
+          currentTime: videoRef.current.duration    // concretamente la propiedad currentTime desde su valor inicial (0) hasta el final del video
         })
       }
     }
