@@ -27,6 +27,18 @@ const Art = () => {
         stagger: 0.2,
         ease: 'power1.inOut'
       })
+      .to('.masked-img', { // Le dice a la imagen que actua como silueta que aumente su tamaño a un 400%
+        scale: 1.3, 
+        maskPosition: 'center', 
+        maskSize: '400%',
+        duration: 1, 
+        ease: 'power1.inOut'
+      })
+      .to('#masked-content', {
+        opacity: 1,
+        duration: 1,
+        ease: 'power1.inOut'
+      })
   })
 
   return (
