@@ -50,6 +50,7 @@ body {
       transparent 100%);
 }
 
+/* Imagen que se ve como silueta */
 @utility masked-img {
   mask-image: url("/images/mask-img.png");
   mask-repeat: no-repeat;
