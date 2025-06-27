@@ -1,5 +1,7 @@
 
+//import { useEffect } from 'react'
 import gsap from 'gsap'
+//import Lenis from '@studio-freight/lenis'
 import { ScrollTrigger, SplitText } from 'gsap/all'
 import Navbar from './components/Navbar'
 import Hero from './components/Hero'
@@ -12,6 +14,7 @@ import Contact from './components/Contact'
 gsap.registerPlugin(ScrollTrigger, SplitText)
 
 const App = () => {
+
   return (
     <main>
       <Navbar />

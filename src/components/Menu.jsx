@@ -9,44 +9,97 @@ const Menu = () => {
 
   const contentRef =useRef()                           // Usar el valor de current no provoca un nuevo renderizado
   const [currentIndex, setCurrentIndex] = useState(0); // Estado del índice actual que solo se jecuta la primera vez
-  const prevIndexRef = useRef(currentIndex);           // Se establece prevIndex en 0 la primera vez
+  const prevIndexRef = useRef(currentIndex);           // Se establece prevIndex en 0 la primera vez. Guarda el índice ANTERIOR. Es una ref para que su valor no se pierda entre renderizados.
   const totalCocktails = sliderLists.length;
 
   useGSAP(() => {
+    const previousIndex = prevIndexRef.current;                         // Se obtiene el índice anterior
+    const currentSlideIndex = currentIndex;                             // Se obtiene el índice actual
 
-    const previousIndex = prevIndexRef.current;  // Se guarda el índice actual de forma persistente.
-
-    gsap.fromTo("#title", 
-      { opacity: 0 }, 
-      { opacity: 1, duration: 1 }
-    )
-   
-    let direction = currentIndex > previousIndex ? 1 : -1;                    // Determina el sentido de la animación. 1 derecha, -1 izquierda.
-    if (previousIndex === totalCocktails - 1 && currentIndex === 0) {         // Del último al primero
-      direction = 1;
-    } else if (previousIndex === 0 && currentIndex === totalCocktails - 1) { // Del primero al último
-      direction = -1;
+    // Determina la dirección visual de entrada
+    let enterSlideDirection = 0;
+    if (currentSlideIndex > previousIndex) {                            // Si el índice actual es mayor que el anterior se entra hacia la derecha
+      enterSlideDirection = 1; 
+    } else if (currentSlideIndex < previousIndex) {                     // Si el índice actual es menor que el anterior se entra hacia la izquierda
+      enterSlideDirection = -1; 
     }
 
-    gsap.fromTo(".cocktail img", 
-      { opacity: 0, xPercent: -100 * direction},
-      { opacity: 1, xPercent: 0, duration: 1, ease: "power1.inOut"},
+    // Manejar casos de envío de contenido
+    if (previousIndex === totalCocktails - 1 && currentSlideIndex === 0) {
+      enterSlideDirection = 1; // Last to first, new content enters from right
+    } else if (previousIndex === 0 && currentSlideIndex === totalCocktails - 1) {
+      enterSlideDirection = -1; // First to last, new content enters from left
+    }
+
+    const tlEnter = gsap.timeline({                                      // Se crea una línea de tiempo de GSAP para coordinar las animaciones de entrada.
+        defaults: { duration: 0.7, ease: "power1.out" }
+    });
+
+    // Animación de entrada
+    tlEnter.fromTo(".cocktail img",                                      // Se anima la imagen nueva
+      { opacity: 0, xPercent: -100 * enterSlideDirection },              // Empieza fuera de la pantalla
+      { opacity: 1, xPercent: 0 }                                        // Termina en su posición final
     )
-    gsap.fromTo(".details h2 ",
+    .fromTo(".details h2 ",                                              // Se anima el título
+      { yPercent: 100, opacity: 0 },                                     // Empieza abajo y transparente
+      { yPercent: 0, opacity: 100 }                                      // Termina en su posición final y visible
+    )
+    .fromTo(".details p ",
       { yPercent: 100, opacity: 0 },
-      { yPercent: 0, opacity: 100, ease: "power1.inOut" } 
+      { yPercent: 0, opacity: 100 }
     )
-    gsap.fromTo(".details p ",
-      { yPercent: 100, opacity: 0 },
-      { yPercent: 0, opacity: 100, ease: "power1.inOut" } 
-    )
-    
-    prevIndexRef.current = currentIndex;                                   // Actualiza la referencia del índice previo para la siguiente animación
-  },[currentIndex]);
+    .fromTo("#title",
+      { opacity: 0 },
+      { opacity: 1 }
+    );
+
+    prevIndexRef.current = currentIndex;                                   // Se actualiza el índice anterior
+
+  },[currentIndex]);                                                       // Se ejecuta la animación cuando el índice cambia
 
   const goToSlide = (index) => {
-    const newIndex = (index + totalCocktails) % totalCocktails;
-    setCurrentIndex(newIndex)
+    const newIndex = (index + totalCocktails) % totalCocktails;            // Se determina el índice nuevo en base a %
+
+    if (newIndex === currentIndex) return;                                 // No hacer nada si se hace click en la misma diapositiva
+
+    // Determinar la dirección visual 
+    // para el contenido que sale
+    let exitSlideDirection = 0;
+    if (newIndex > currentIndex) {                                         // Si el nuevo índice es mayor que el actual se sale hacia la derecha
+      exitSlideDirection = 1; 
+    } else if (newIndex < currentIndex) {
+      exitSlideDirection = -1;                                             // Si el nuevo índice es menor que el actual se sale hacia la izquierda
+    }
+
+    // Manejar casos de envío de contenido
+    if (currentIndex === totalCocktails - 1 && newIndex === 0) {           // Si el índice actual es el último y el nuevo índice es el primero
+      exitSlideDirection = 1;                                              // Se sale hacia la derecha
+    } else if (currentIndex === 0 && newIndex === totalCocktails - 1) {    // Si el índice actual es el primero y el nuevo índice es el último
+      exitSlideDirection = -1;                                             // Se sale hacia la izquierda
+    }
+
+    const tlExit = gsap.timeline({                                         // Se crea una línea de tiempo de GSAP para coordinar las animaciones de salida.
+      defaults: { duration: 0.4, ease: "power1.in" },
+      onComplete: () => {                                                  // onComplete permite ejecutar una función después de que la animación haya terminado
+        setCurrentIndex(newIndex);                                         // Se actualiza el índice después de que la animación haya terminado
+      }
+    });
+
+    // Animación de salida
+    tlExit.to(".cocktail img", {
+        xPercent: 100 * exitSlideDirection,                                // Se anima la imagen antigua según la dirección de salida
+        opacity: 0,
+        overwrite: true 
+    }, 0)
+    .to(".details h2, .details p", {
+        yPercent: 100,
+        opacity: 0,
+        overwrite: true
+    }, 0)
+    .to("#title", {
+        opacity: 0,
+        overwrite: true
+    }, 0);
   }
 
   const getCocktailAt = (indexOffset) => {
@@ -57,6 +110,11 @@ const Menu = () => {
   const nextCocktail = getCocktailAt(1)
   const prevCocktail = getCocktailAt(-1)
 
+
+  // Resumen ciclo completo (click en siguiente/next)
+  // 1º click -> goToSlide(1) -> tlExit -> imagen de salida termina -> setCurrentIndex(1)
+  // 2º React rerenderiza -> useGSAP -> tlEnter -> imagen de entrada comienza 
+  // Patrón: Animar Salida -> Actualizar Estado -> Animar Entrada
   return (
     <section id="menu" aria-labelledby="menu-heading">
       <img 
